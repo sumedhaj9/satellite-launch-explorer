@@ -56,3 +56,37 @@ if country:
         fig_status = px.bar(status_counts, x='status', y='count', color='status', text='count')
         st.plotly_chart(fig_status, use_container_width=True)
 
+        selected_status = st.selectbox("Select Status", status_counts['status'])
+        if selected_status:
+          final_list = (
+              year_df[year_df['status'] == selected_status][['name', 'launch_date', 'flight_ended', 'norad_id']]
+              .rename(columns={
+                  'name': 'Satellite Name',
+                  'launch_date': 'Launch Date',
+                  'flight_ended': 'Flight Ended',
+                  'norad_id': 'NORAD ID'
+              })
+          )
+
+          # Step 4: select status
+          final_list['Launch Date'] = pd.to_datetime(final_list['Launch Date'], errors='coerce').dt.strftime('%b %d, %Y')
+          final_list['Flight Ended'] = pd.to_datetime(final_list['Flight Ended'], errors='coerce').dt.strftime('%b %d, %Y')
+
+          st.subheader(f"🛰️ Satellites from {country} ({year}, {selected_status})")
+
+          # Display as info cards
+          for _, row in final_list.iterrows():
+              st.markdown(f"""
+              <div style="
+                  background-color:#f5f7fa;
+                  padding:15px;
+                  border-radius:12px;
+                  margin-bottom:10px;
+                  box-shadow:0 2px 4px rgba(0,0,0,0.08);
+                  ">
+                  <b style="font-size:16px;">{row['Satellite Name']}</b><br>
+                  🚀 <b>Launch Date:</b> {row['Launch Date']}<br>
+                  ⏳ <b>Flight Ended:</b> {row['Flight Ended'] if row['Flight Ended'] != 'NaT' else '—'}<br>
+                  🆔 <b>NORAD ID:</b> {row['NORAD ID']}
+              </div>
+              """, unsafe_allow_html=True)
